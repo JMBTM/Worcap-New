@@ -6,39 +6,38 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.*;
+import java.text.ParseException;
 
 public class ImageInsertion {
     
-    private final String host = "jdbc:mysql://localhost:3306/worcap";//host for server and name of the database for connection
-    private final String uName = "root";
-    private final String pass = "";
-    private com.mysql.jdbc.Connection con;
-    private com.mysql.jdbc.Statement s;
-    private ResultSet rs;
+    private final DBConnect db = new DBConnect();
+    private Connection con;
     
-    public ImageInsertion(){
-        try{
-            Class.forName("com.mysql.jdbc.Driver");
-            con = (com.mysql.jdbc.Connection) DriverManager.getConnection(host, uName, pass);
-            s = (com.mysql.jdbc.Statement) con.createStatement();
-        }catch(ClassNotFoundException | SQLException err){
-            System.out.println("There's an error!" + err);
-        }
+    private final ServerBaseTimeAndDate sDT = new ServerBaseTimeAndDate();
+    
+    public ImageInsertion() throws SQLException{
+        con = db.getConnection();
     }
     
-    public void insertImage(File img, FileInputStream inImg){
-        
+    public void insertImage(File img, FileInputStream inImg, FileInputStream inImgRes) throws ParseException{
         try{
-            
-            PreparedStatement create = con.prepareStatement("INSERT INTO Screenshot(Img, Message, Date, Time, DateAndTime, LevelTime, EmployeeID, ProjectID) VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
-            create.setBinaryStream(1,(InputStream)inImg,(int)img.length());
-            create.setString(2, "This is just a demo!");
-            create.setNull(3, 0);
-            create.setNull(4, 0);
-            create.setNull(5, 0);
-            create.setString(6, "00-10");
-            create.setInt(7, 1);
-            create.setInt(8, 1);
+            PreparedStatement create = con.prepareStatement("INSERT INTO Screenshot VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            create.setNull(1, 0);
+            create.setBinaryStream(2,(InputStream)inImg,(int)img.length());
+            create.setBlob(3,inImgRes);
+            create.setString(4,sDT.getDate());
+            create.setString(5, sDT.getTime());
+            create.setString(6, sDT.getDateTime());
+            create.setInt(7, 6);
+            create.setString(8, "00-10");
+            create.setInt(9, 0);
+            create.setInt(10, 1);
+            create.setInt(11, 1);
+            create.setString(12, "100% Online");
+            create.setInt(13, 0);
+            create.setInt(14, 0);
+            create.setInt(15, 1);
+            create.setString(16, "New");
             create.executeUpdate();
             create.close();
             
@@ -48,8 +47,5 @@ public class ImageInsertion {
         finally{
             System.out.println("Successfully insert the image");
         }
-    }
-    
-    
-    
+    } 
 }
